@@ -13,6 +13,7 @@ import { PersonSelect } from "components/PersonSelect";
 
 import { ApprovalItemsPicker, defaultItem } from "./ApprovalItemsPicker";
 import { FormValues } from "./types";
+import { nextTuesday } from "lib/fmtDate";
 
 type Props = {
   onSubmit: (args: CreateNewApprovalArgs) => void;
@@ -23,9 +24,7 @@ const LabeledInput = makeLabeledInput<FormValues>();
 export function AddNewApprovalForm({ onSubmit }: Props) {
   const history = useHistory();
   const formObject = useForm<FormValues>({
-    defaultValues: {
-      items: [defaultItem],
-    },
+    defaultValues: getDefaultValues(),
   });
 
   const handleSubmit = (values: FormValues) => {
@@ -135,4 +134,13 @@ function validateApproval(approval: FormValues): CreateNewApprovalArgs {
   }
   // This case should not happen, the validation should handle it
   throw Error("Missing required fields");
+}
+
+function getDefaultValues() {
+  const startDate = new Date();
+  return {
+    items: [defaultItem],
+    startDate,
+    endDate: nextTuesday(startDate),
+  };
 }

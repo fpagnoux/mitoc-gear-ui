@@ -6,7 +6,10 @@ import { GearType as APIGearType } from "apiClient/gear";
 
 import { Select } from "./Select";
 
-type GearType = Pick<APIGearType, "id" | "typeName" | "shorthand">;
+type GearType = Pick<
+  APIGearType,
+  "id" | "typeName" | "shorthand" | "restricted"
+>;
 
 type GearTypeOption = GearType & {
   value: number;
@@ -17,17 +20,23 @@ export function GearTypeSelect({
   value,
   onChange,
   invalid,
+  filterOptions,
 }: {
   value: number | null | undefined;
   onChange: (value: GearType | null) => void;
   invalid?: boolean;
+  filterOptions?: (value: GearType) => boolean;
 }) {
   const gearTypeOptions = useGearTypesOptions();
   const selectedOption = gearTypeOptions.find((o) => o.id === value);
+  const filteredOptions =
+    filterOptions != null
+      ? gearTypeOptions.filter(filterOptions)
+      : gearTypeOptions;
   return (
     <Select
       className="flex-grow-1"
-      options={gearTypeOptions}
+      options={filteredOptions}
       value={selectedOption}
       onChange={onChange}
       invalid={invalid}

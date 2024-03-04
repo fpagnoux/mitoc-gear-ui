@@ -1,1 +1,1 @@
-export const newApprovalUI = false;
+export const newApprovalUI = true;

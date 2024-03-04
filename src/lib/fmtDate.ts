@@ -15,3 +15,10 @@ export function formatDuration(duration: string) {
 export function toIsoDate(date: Date) {
   return dayjs(date).format("YYYY-MM-DD");
 }
+
+export function nextTuesday(from: Date): Date {
+  const today = dayjs(from);
+  // Ensure a weekend has passed
+  const nextSunday = today.day(7);
+  return nextSunday.day(2).toDate();
+}

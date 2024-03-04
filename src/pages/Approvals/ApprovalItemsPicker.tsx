@@ -70,6 +70,7 @@ export function ApprovalItemsPicker() {
                   renderComponent={({ value, onChange, invalid }) => {
                     return (
                       <GearTypeSelect
+                        filterOptions={({ restricted }) => !!restricted}
                         value={value ?? null}
                         onChange={(val) => onChange(val?.id)}
                         invalid={invalid}
