@@ -2,7 +2,7 @@ import { faClose } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 
-import { Approval, deleteApproval } from "apiClient/approvals";
+import { Approval, ApprovalItem, deleteApproval } from "apiClient/approvals";
 import { PersonBase } from "apiClient/people";
 import { DataGrid } from "components/DataGrid";
 import { GearLink } from "components/GearLink";
@@ -63,9 +63,13 @@ function EndDateCell({ item: approval }: { item: Approval }) {
 }
 
 function ItemsCell({ item: approval }: { item: Approval }) {
+  return <ApprovalsList items={approval.items} />;
+}
+
+export function ApprovalsList({ items }: { items: ApprovalItem[] }) {
   return (
     <ul>
-      {approval.items.map(({ type, item }) => {
+      {items.map(({ type, item }) => {
         if (type === "gearType") {
           return (
             <li key={item.gearType.id}>

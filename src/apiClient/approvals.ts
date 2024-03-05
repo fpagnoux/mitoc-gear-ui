@@ -13,6 +13,8 @@ export type Approval = {
   items: ApprovalItem[];
 };
 
+export type PersonApproval = Omit<Approval, "renter">;
+
 interface GearItem {
   id: string;
   type: GearTypeWithShorthand;

@@ -9,7 +9,7 @@ import { useGetPersonQuery } from "redux/api";
 
 import { BuyGear } from "./BuyGear";
 import { CheckoutStaging } from "./CheckoutStaging";
-import { MoreGear } from "./MoreGear";
+import { RentGear } from "./RentGear";
 import {
   PersonPageContextProvider,
   usePersonPageContext,
@@ -80,7 +80,7 @@ function PersonPageInner() {
       <div className="col-12 col-md-7 p-2">
         <PersonTabsSelector activeTab={tab} updateTab={setTab} />
         {tab === PersonPageTabs.gearOut && <PersonRentals />}
-        {tab === PersonPageTabs.moreGear && <MoreGear personId={person.id} />}
+        {tab === PersonPageTabs.rentGear && <RentGear personId={person.id} />}
         {tab === PersonPageTabs.buyGear && <BuyGear />}
         {tab === PersonPageTabs.rentalHistory && (
           <PersonRentalsHistory personId={person.id} />

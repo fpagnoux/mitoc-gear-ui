@@ -27,7 +27,6 @@ const LabeledInput = makeLabeledInput<FormValues>();
 export function AddNewApprovalForm({ onSubmit, personId }: Props) {
   const history = useHistory();
   const { data: person } = useGetPersonQuery(personId ?? skipToken);
-  console.log({ person });
   const formObject = useForm<FormValues>({
     defaultValues: getDefaultValues(personId),
   });
@@ -43,7 +42,6 @@ export function AddNewApprovalForm({ onSubmit, personId }: Props) {
         title="Renter:"
         name="renter"
         renderComponent={({ value, onChange, invalid }) => {
-          console.log({ value });
           return (
             <PersonSelect
               person={person}

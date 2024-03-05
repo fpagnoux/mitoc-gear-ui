@@ -6,22 +6,27 @@ import { GearLink } from "components/GearLink";
 import { SearchTextField } from "components/Inputs/TextField";
 import { TablePagination } from "components/TablePagination";
 import { fmtAmount } from "lib/fmtNumber";
-import { useGearList } from "redux/api";
+import { useGearList, useGetPersonApprovalsQuery } from "redux/api";
 import { usePermissions } from "redux/auth";
 
 import { usePersonPageContext } from "./PeoplePage/PersonPageContext";
+import { isEmpty } from "lodash";
+import { ApprovalsList } from "pages/Approvals/ApprovalsTable";
 
 type Props = {
   personId: string;
 };
 
-export function MoreGear({ personId }: Props) {
+export function RentGear({ personId }: Props) {
   const { checkoutBasket } = usePersonPageContext();
   const { isApprover } = usePermissions();
   const [query, setQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
   const { gearList, nbPages } = useGearList({ q: query, page, retired: false });
+  const { data: approvals } = useGetPersonApprovalsQuery({ personId });
+
+  const hasApprovals = approvals != null && !isEmpty(approvals.results);
 
   return (
     <StyledDiv className="border rounded-2 p-2 bg-light">
@@ -31,6 +36,14 @@ export function MoreGear({ personId }: Props) {
           <TablePagination setPage={setPage} page={page} nbPage={nbPages} />
         )}
       </div>
+      {hasApprovals && (
+        <div className="alert alert-success" role="alert">
+          ✅ Approved for restricted gear:
+          <ApprovalsList
+            items={approvals.results.flatMap(({ items }) => items)}
+          />
+        </div>
+      )}
       {isApprover && (
         <Link to={`/add-approval?personId=${personId}`}>
           <button className="btn btn-outline-primary mb-3">
