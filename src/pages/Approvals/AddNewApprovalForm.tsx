@@ -14,17 +14,22 @@ import { PersonSelect } from "components/PersonSelect";
 import { ApprovalItemsPicker, defaultItem } from "./ApprovalItemsPicker";
 import { FormValues } from "./types";
 import { nextTuesday } from "lib/fmtDate";
+import { useGetPersonQuery } from "redux/api";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 type Props = {
   onSubmit: (args: CreateNewApprovalArgs) => void;
+  personId?: string;
 };
 
 const LabeledInput = makeLabeledInput<FormValues>();
 
-export function AddNewApprovalForm({ onSubmit }: Props) {
+export function AddNewApprovalForm({ onSubmit, personId }: Props) {
   const history = useHistory();
+  const { data: person } = useGetPersonQuery(personId ?? skipToken);
+  console.log({ person });
   const formObject = useForm<FormValues>({
-    defaultValues: getDefaultValues(),
+    defaultValues: getDefaultValues(personId),
   });
 
   const handleSubmit = (values: FormValues) => {
@@ -38,8 +43,10 @@ export function AddNewApprovalForm({ onSubmit }: Props) {
         title="Renter:"
         name="renter"
         renderComponent={({ value, onChange, invalid }) => {
+          console.log({ value });
           return (
             <PersonSelect
+              person={person}
               value={value}
               onChange={(person) => onChange(person?.id)}
               invalid={invalid}
@@ -136,11 +143,12 @@ function validateApproval(approval: FormValues): CreateNewApprovalArgs {
   throw Error("Missing required fields");
 }
 
-function getDefaultValues() {
+function getDefaultValues(personId?: string): FormValues {
   const startDate = new Date();
   return {
     items: [defaultItem],
     startDate,
     endDate: nextTuesday(startDate),
+    renter: personId,
   };
 }

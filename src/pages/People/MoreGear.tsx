@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 import { GearLink } from "components/GearLink";
@@ -6,11 +7,17 @@ import { SearchTextField } from "components/Inputs/TextField";
 import { TablePagination } from "components/TablePagination";
 import { fmtAmount } from "lib/fmtNumber";
 import { useGearList } from "redux/api";
+import { usePermissions } from "redux/auth";
 
 import { usePersonPageContext } from "./PeoplePage/PersonPageContext";
 
-export function MoreGear() {
+type Props = {
+  personId: string;
+};
+
+export function MoreGear({ personId }: Props) {
   const { checkoutBasket } = usePersonPageContext();
+  const { isApprover } = usePermissions();
   const [query, setQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
@@ -19,11 +26,18 @@ export function MoreGear() {
   return (
     <StyledDiv className="border rounded-2 p-2 bg-light">
       <div className="d-flex justify-content-between">
-        <h3 className="mb-4">More gear</h3>
+        <h3 className="mb-4">Rent gear</h3>
         {query && nbPages != null && nbPages > 1 && (
           <TablePagination setPage={setPage} page={page} nbPage={nbPages} />
         )}
       </div>
+      {isApprover && (
+        <Link to={`/add-approval?personId=${personId}`}>
+          <button className="btn btn-outline-primary mb-3">
+            ＋ Add approval
+          </button>
+        </Link>
+      )}
       <label className="w-100 mb-2 d-flex flex-row align-items-center">
         <SearchTextField
           value={query}

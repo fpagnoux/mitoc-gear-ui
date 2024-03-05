@@ -80,7 +80,7 @@ function PersonPageInner() {
       <div className="col-12 col-md-7 p-2">
         <PersonTabsSelector activeTab={tab} updateTab={setTab} />
         {tab === PersonPageTabs.gearOut && <PersonRentals />}
-        {tab === PersonPageTabs.moreGear && <MoreGear />}
+        {tab === PersonPageTabs.moreGear && <MoreGear personId={person.id} />}
         {tab === PersonPageTabs.buyGear && <BuyGear />}
         {tab === PersonPageTabs.rentalHistory && (
           <PersonRentalsHistory personId={person.id} />

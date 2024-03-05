@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { createNewApproval, CreateNewApprovalArgs } from "apiClient/approvals";
 import { APIError as APIErrorClass } from "apiClient/client";
@@ -14,7 +14,9 @@ export function AddNewApproval() {
   const [success, setSuccess] = useState<boolean>(false);
   const [error, setError] = useState<APIErrorType | undefined>();
   const refetchApprovals = gearDbApi.useLazyGetApprovalsQuery()[0];
-
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  const personId = params.get("personId") ?? undefined;
   const onSubmit = (args: CreateNewApprovalArgs) => {
     createNewApproval(args)
       .then(() => {
@@ -40,7 +42,9 @@ export function AddNewApproval() {
         {error && (
           <div className="alert alert-danger">Approval failed: {error.msg}</div>
         )}
-        {!success && <AddNewApprovalForm onSubmit={onSubmit} />}
+        {!success && (
+          <AddNewApprovalForm onSubmit={onSubmit} personId={personId} />
+        )}
         {success && (
           <>
             <p className="mb-2 alert alert-success">

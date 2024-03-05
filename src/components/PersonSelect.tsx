@@ -9,12 +9,19 @@ import { useDebounce } from "./useDebounce";
 
 type Props = {
   value: string | undefined;
+  person?: PersonSummary;
   onChange: (person: PersonSummary | null | undefined) => void;
   className?: string;
   invalid?: boolean;
 };
 
-export function PersonSelect({ value, onChange, className, invalid }: Props) {
+export function PersonSelect({
+  person,
+  value,
+  onChange,
+  className,
+  invalid,
+}: Props) {
   const [query, setInput] = useState<string>("");
   const { pending, fn: debouncedSetInput } = useDebounce(setInput, 250);
   const { personList, isFetching } = usePeopleList({
@@ -25,9 +32,10 @@ export function PersonSelect({ value, onChange, className, invalid }: Props) {
     `${person.firstName} ${person.lastName}`;
 
   const namesCount = countBy(personList, getName);
+  const allPersons = [...(person ? [person] : []), ...(personList ?? [])];
 
   const options =
-    personList?.map((person) => {
+    allPersons.map((person) => {
       const name = getName(person);
       const fullName =
         namesCount[name] > 1 ? `${name} (${person.email})` : name;
@@ -38,7 +46,7 @@ export function PersonSelect({ value, onChange, className, invalid }: Props) {
       };
     }) ?? [];
 
-  const selectedOption = options.find((o) => o.id === value);
+  const selectedOption = options.find((o) => String(o.id) === String(value));
 
   return (
     <Select
