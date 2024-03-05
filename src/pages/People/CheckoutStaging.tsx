@@ -1,21 +1,49 @@
-import { map, sum } from "lodash";
+import { isEmpty, map, sum } from "lodash";
 
+import { ApprovalItemType, PersonApproval } from "apiClient/approvals";
 import type { Person } from "apiClient/people";
 import { RemoveButton } from "components/Buttons";
 import { GearLink } from "components/GearLink";
 import { fmtAmount } from "lib/fmtNumber";
 
 import { usePersonPageContext } from "./PeoplePage/PersonPageContext";
+import { GearSummary } from "apiClient/gear";
 
-export function CheckoutStaging({ onCheckout }: { onCheckout: () => void }) {
+type Props = { onCheckout: () => void; approvals: PersonApproval[] };
+
+export function CheckoutStaging({ onCheckout, approvals }: Props) {
   const { person, checkoutBasket } = usePersonPageContext();
   const gearToCheckout = checkoutBasket.items;
+  const gearWithApprovals: (GearSummary & { approved?: boolean })[] =
+    gearToCheckout.map((gear) => {
+      if (!gear.restricted) {
+        return gear;
+      }
+      const approved = approvals.some((approval) =>
+        approval.items.some((item) => {
+          return (
+            (item.type === ApprovalItemType.gearType &&
+              item.item.gearType.id === gear.type.id) ||
+            (item.type === ApprovalItemType.specificItem &&
+              item.item.gearItem.id === gear.id)
+          );
+        }),
+      );
+      return { ...gear, approved };
+    });
   const totalDeposit = sum(map(gearToCheckout, "depositAmount"));
+
+  const unapprovedGear = gearWithApprovals.filter(
+    (gear) => gear.restricted && !gear.approved,
+  );
 
   return (
     <div className="border rounded-2 p-2 mb-3 bg-light">
       <h3>Gear to check out</h3>
       <hr />
+      {!isEmpty(unapprovedGear) && (
+        <RestrictedGearWarning gear={unapprovedGear} />
+      )}
       <h5>
         Deposit due:{" "}
         {hasFFCheck(person) ? (
@@ -27,7 +55,7 @@ export function CheckoutStaging({ onCheckout }: { onCheckout: () => void }) {
           <strong className="text-warning">{fmtAmount(totalDeposit)}</strong>
         )}
       </h5>
-      {gearToCheckout && (
+      {gearWithApprovals && (
         <>
           <table className="table">
             <thead>
@@ -47,19 +75,32 @@ export function CheckoutStaging({ onCheckout }: { onCheckout: () => void }) {
               </tr>
             </thead>
             <tbody>
-              {gearToCheckout.map(
-                ({ id, type, dailyFee, depositAmount, restricted }) => (
+              {gearWithApprovals.map(
+                ({
+                  id,
+                  type,
+                  dailyFee,
+                  depositAmount,
+                  restricted,
+                  approved,
+                }) => (
                   <tr key={id}>
                     <td>
                       <GearLink id={id}>{id}</GearLink>
                       <br />
                       {type.typeName}
-                      {restricted && (
-                        <>
-                          <br />
-                          <strong className="text-warning">RESTRICTED</strong>
-                        </>
-                      )}
+                      {restricted &&
+                        (!approved ? (
+                          <>
+                            <br />
+                            <strong className="text-warning">RESTRICTED</strong>
+                          </>
+                        ) : (
+                          <>
+                            <br />
+                            <span>✅ Approved</span>
+                          </>
+                        ))}
                     </td>
                     <td>{fmtAmount(depositAmount)}</td>
                     <td>{fmtAmount(dailyFee)}</td>
@@ -90,5 +131,30 @@ function hasFFCheck(person: Person) {
   return (
     person.frequentFlyerCheck != null &&
     today <= person.frequentFlyerCheck.expires
+  );
+}
+
+export function RestrictedGearWarning({ gear }: { gear: GearSummary[] }) {
+  return (
+    <div className="alert alert-warning p-2">
+      <h4 className="text-center">
+        <strong>Unapproved restricted gear</strong>
+      </h4>
+      Some items are <strong>restricted</strong>, and are not marked as approved
+      in the database.
+      <br />
+      Please make sure renter has received approval (e.g. over email), or is a
+      leader running a MITOC trip.
+      <br />
+      <br />
+      Items:
+      <ul>
+        {gear.map(({ type, id }) => (
+          <li key={id}>
+            {id} ({type.typeName})
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

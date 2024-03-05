@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { addNote, archiveNote } from "apiClient/people";
 import { Notes } from "components/Notes";
 import { useSetPageTitle } from "hooks";
-import { useGetPersonQuery } from "redux/api";
+import { useGetPersonApprovalsQuery, useGetPersonQuery } from "redux/api";
 
 import { BuyGear } from "./BuyGear";
 import { CheckoutStaging } from "./CheckoutStaging";
@@ -44,6 +44,12 @@ function PersonPageInner() {
     purchaseBasket,
   } = usePersonPageContext();
 
+  const { data: approvalsData } = useGetPersonApprovalsQuery({
+    personId: person.id,
+  });
+
+  const approvals = approvalsData?.results ?? [];
+
   useSetPageTitle(person ? `${person.firstName} ${person.lastName} ` : "");
 
   const isOverdue = person.rentals.some((rental) => rental.weeksOut >= 7);
@@ -68,6 +74,7 @@ function PersonPageInner() {
         />
         {!isEmpty(checkoutBasket.items) && (
           <CheckoutStaging
+            approvals={approvals}
             onCheckout={() => {
               setTab(PersonPageTabs.gearOut);
             }}
@@ -80,7 +87,9 @@ function PersonPageInner() {
       <div className="col-12 col-md-7 p-2">
         <PersonTabsSelector activeTab={tab} updateTab={setTab} />
         {tab === PersonPageTabs.gearOut && <PersonRentals />}
-        {tab === PersonPageTabs.rentGear && <RentGear personId={person.id} />}
+        {tab === PersonPageTabs.rentGear && (
+          <RentGear approvals={approvals} personId={person.id} />
+        )}
         {tab === PersonPageTabs.buyGear && <BuyGear />}
         {tab === PersonPageTabs.rentalHistory && (
           <PersonRentalsHistory personId={person.id} />
