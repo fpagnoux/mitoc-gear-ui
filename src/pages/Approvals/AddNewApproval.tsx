@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 
 import { createNewApproval, CreateNewApprovalArgs } from "apiClient/approvals";
@@ -13,18 +14,16 @@ export function AddNewApproval() {
   useSetPageTitle("Approve restricted gear rental");
   const [success, setSuccess] = useState<boolean>(false);
   const [error, setError] = useState<APIErrorType | undefined>();
-  const refetchApprovals = gearDbApi.useLazyGetApprovalsQuery()[0];
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const personId = params.get("personId") ?? undefined;
+  const dispatch = useDispatch();
   const onSubmit = (args: CreateNewApprovalArgs) => {
     createNewApproval(args)
       .then(() => {
+        dispatch(gearDbApi.util.invalidateTags(["Approvals"]));
         setError(undefined);
         setSuccess(true);
-        // TODO: We should use RTK's mutations instead of refetching everything
-        refetchApprovals({ past: false });
-        refetchApprovals({ past: undefined });
       })
       .catch((err) => {
         if (err instanceof APIErrorClass) {
